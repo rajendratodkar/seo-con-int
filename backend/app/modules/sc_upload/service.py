@@ -22,6 +22,28 @@ COLUMN_MAPS = {
         "ctr": ["ctr", "click-through rate", "click through rate"],
         "position": ["position", "avg. position", "average position", "avg position"],
     },
+    "url_inspection": {
+        "url": ["url", "page", "page url", "address"],
+        "coverage": ["coverage", "status", "coverage status"],
+        "crawled_as": ["crawled as", "crawler", "googlebot type"],
+        "crawl_allowed": ["crawl allowed", "robots.txt", "allowed"],
+        "page_fetch": ["page fetch", "fetch status", "fetch"],
+        "indexing": ["indexing", "indexing status", "indexed"],
+        "last_crawl": ["last crawl", "crawled date", "crawl date"],
+    },
+    "coverage": {
+        "status": ["status", "coverage status", "type"],
+        "category": ["category", "issue", "issue type", "reason"],
+        "count": ["count", "number", "total", "affected urls"],
+        "examples": ["examples", "sample", "urls", "example urls"],
+    },
+    "links": {
+        "target_page": ["target page", "target url", "your page", "page"],
+        "source_page": ["source page", "source url", "linking page", "from"],
+        "anchor_text": ["anchor text", "anchor", "link text"],
+        "first_seen": ["first seen", "first discovered", "first crawl"],
+        "last_seen": ["last seen", "last discovered", "last crawl"],
+    },
 }
 
 
@@ -81,11 +103,17 @@ class ScUploadService:
             site_url = self._extract_site_url(rows)
             property_id = self.repo.get_or_create_property(website_id, site_url)
 
-            # Import data
+            # Import data based on type
             if import_type == "performance":
                 imported = self.repo.upsert_performance_rows(website_id, property_id, rows)
+            elif import_type == "url_inspection":
+                imported = self.repo.upsert_url_inspection_rows(website_id, rows)
+            elif import_type == "coverage":
+                imported = self.repo.upsert_coverage_rows(website_id, rows)
+            elif import_type == "links":
+                imported = self.repo.upsert_links_rows(website_id, rows)
             else:
-                imported = 0  # Other import types TBD
+                imported = 0
 
             # Calculate date range
             dates = [r.get("date") for r in rows if r.get("date")]
@@ -164,8 +192,16 @@ class ScUploadService:
         for item in rows_data:
             if import_type == "performance":
                 row = self._parse_json_performance_row(item)
-                if row:
-                    rows.append(row)
+            elif import_type == "url_inspection":
+                row = self._parse_json_url_inspection_row(item)
+            elif import_type == "coverage":
+                row = self._parse_json_coverage_row(item)
+            elif import_type == "links":
+                row = self._parse_json_links_row(item)
+            else:
+                row = None
+            if row:
+                rows.append(row)
 
         return rows
 
@@ -183,6 +219,47 @@ class ScUploadService:
             "ctr": item.get("ctr", 0.0),
             "position": item.get("position", 0.0),
             "date": item.get("date", ""),
+        }
+
+    def _parse_json_url_inspection_row(self, item: dict) -> Optional[dict]:
+        """Parse a single JSON URL inspection row."""
+        if "url" not in item and "pageUrl" not in item:
+            return None
+        return {
+            "url": item.get("url") or item.get("pageUrl", ""),
+            "coverage": item.get("coverage") or item.get("coverageStatus"),
+            "crawled_as": item.get("crawledAs") or item.get("crawlerType"),
+            "crawl_allowed": item.get("crawlAllowed") or item.get("robotsTxt"),
+            "page_fetch": item.get("pageFetch") or item.get("fetchStatus"),
+            "indexing": item.get("indexing") or item.get("indexingStatus"),
+            "last_crawl": item.get("lastCrawl") or item.get("crawlDate"),
+        }
+
+    def _parse_json_coverage_row(self, item: dict) -> Optional[dict]:
+        """Parse a single JSON coverage row."""
+        status = item.get("status") or item.get("coverageStatus")
+        category = item.get("category") or item.get("issue")
+        if not status:
+            return None
+        return {
+            "status": status,
+            "category": category or "Unknown",
+            "count": int(item.get("count", 0)),
+            "examples": json.dumps(item.get("examples", [])) if item.get("examples") else None,
+        }
+
+    def _parse_json_links_row(self, item: dict) -> Optional[dict]:
+        """Parse a single JSON links row."""
+        target = item.get("targetPage") or item.get("target")
+        source = item.get("sourcePage") or item.get("source")
+        if not target or not source:
+            return None
+        return {
+            "target_page": target,
+            "source_page": source,
+            "anchor_text": item.get("anchorText") or item.get("anchor"),
+            "first_seen": item.get("firstSeen") or item.get("firstDiscovered"),
+            "last_seen": item.get("lastSeen") or item.get("lastDiscovered"),
         }
 
     def _normalize_row(self, row: dict, column_map: dict) -> Optional[dict]:
@@ -212,9 +289,8 @@ class ScUploadService:
                 if target_field in normalized:
                     break
 
-        # Must have at least one metric
-        has_metrics = any(normalized.get(f) for f in ("clicks", "impressions", "ctr", "position"))
-        if not has_metrics:
+        # Validate based on import type
+        if not any(normalized.values()):
             return None
 
         return normalized
@@ -227,14 +303,15 @@ class ScUploadService:
 
     def _extract_site_url(self, rows: list[dict]) -> str:
         """Extract site URL from page URLs in the data."""
+        from urllib.parse import urlparse
         for row in rows:
-            page_url = row.get("page_url", "")
+            # Check multiple URL fields depending on import type
+            page_url = row.get("page_url") or row.get("url") or row.get("target_page") or ""
             if page_url:
-                # Extract base URL (e.g., "https://example.com" from "https://example.com/page")
                 try:
-                    from urllib.parse import urlparse
                     parsed = urlparse(page_url)
-                    return f"{parsed.scheme}://{parsed.netloc}"
+                    if parsed.netloc:
+                        return f"{parsed.scheme}://{parsed.netloc}"
                 except Exception:
                     continue
         return "https://unknown.com"

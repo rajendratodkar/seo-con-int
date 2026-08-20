@@ -43,6 +43,10 @@
 | 28 | Redirect Manager | ✅ Done |
 | 29 | AI Content Brief Generator ⭐ | ✅ Done |
 | 30 | Content Refresh Scheduler | ✅ Done |
+| 31 | Search Console File Upload | ✅ Done |
+| 32 | URL Inspection Import | ✅ Done |
+| 33 | Index Coverage Import | ✅ Done |
+| 34 | Links Import | ✅ Done |
 
 ---
 

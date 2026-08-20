@@ -132,3 +132,109 @@ class ScUploadRepository:
             {"w": website_id},
         ).mappings().one()
         return dict(row)
+
+    # ------------------------------------------------------------------
+    # URL Inspection data upsert
+    # ------------------------------------------------------------------
+
+    def upsert_url_inspection_rows(self, website_id: int, rows: list[dict]) -> int:
+        """Insert URL inspection data rows."""
+        if not rows:
+            return 0
+
+        imported = 0
+        for row in rows:
+            try:
+                self.db.execute(
+                    text(
+                        "INSERT INTO sc_url_inspection "
+                        "(website_id, url, coverage, crawled_as, crawl_allowed, page_fetch, indexing, last_crawl) "
+                        "VALUES (:wid, :url, :coverage, :crawled_as, :crawl_allowed, :page_fetch, :indexing, :last_crawl)"
+                    ),
+                    {
+                        "wid": website_id,
+                        "url": row.get("url", ""),
+                        "coverage": row.get("coverage"),
+                        "crawled_as": row.get("crawled_as"),
+                        "crawl_allowed": row.get("crawl_allowed"),
+                        "page_fetch": row.get("page_fetch"),
+                        "indexing": row.get("indexing"),
+                        "last_crawl": row.get("last_crawl"),
+                    },
+                )
+                imported += 1
+            except Exception:
+                self.db.rollback()
+                continue
+
+        self.db.commit()
+        return imported
+
+    # ------------------------------------------------------------------
+    # Coverage data upsert
+    # ------------------------------------------------------------------
+
+    def upsert_coverage_rows(self, website_id: int, rows: list[dict]) -> int:
+        """Insert index coverage data rows."""
+        if not rows:
+            return 0
+
+        imported = 0
+        for row in rows:
+            try:
+                self.db.execute(
+                    text(
+                        "INSERT INTO sc_coverage "
+                        "(website_id, status, category, count, examples) "
+                        "VALUES (:wid, :status, :category, :count, :examples)"
+                    ),
+                    {
+                        "wid": website_id,
+                        "status": row.get("status", ""),
+                        "category": row.get("category", ""),
+                        "count": row.get("count", 0),
+                        "examples": row.get("examples"),
+                    },
+                )
+                imported += 1
+            except Exception:
+                self.db.rollback()
+                continue
+
+        self.db.commit()
+        return imported
+
+    # ------------------------------------------------------------------
+    # Links data upsert
+    # ------------------------------------------------------------------
+
+    def upsert_links_rows(self, website_id: int, rows: list[dict]) -> int:
+        """Insert links data rows."""
+        if not rows:
+            return 0
+
+        imported = 0
+        for row in rows:
+            try:
+                self.db.execute(
+                    text(
+                        "INSERT INTO sc_links "
+                        "(website_id, target_page, source_page, anchor_text, first_seen, last_seen) "
+                        "VALUES (:wid, :target, :source, :anchor, :first, :last)"
+                    ),
+                    {
+                        "wid": website_id,
+                        "target": row.get("target_page", ""),
+                        "source": row.get("source_page", ""),
+                        "anchor": row.get("anchor_text"),
+                        "first": row.get("first_seen"),
+                        "last": row.get("last_seen"),
+                    },
+                )
+                imported += 1
+            except Exception:
+                self.db.rollback()
+                continue
+
+        self.db.commit()
+        return imported
