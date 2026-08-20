@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.13.0] — 2026-08-20
+
+### Added
+- Import type dropdown on Search Console page (Performance, URL Inspection, Index Coverage, Links)
+- Descriptions for each import type in the dropdown
+
+---
+
 ## [v1.12.0] — 2026-08-20
 
 ### Added
