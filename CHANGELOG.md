@@ -6,6 +6,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.16.0] — 2026-08-20
+
+### Added
+- Delete button for individual imports in history table
+- Confirmation dialog before deletion
+- DELETE /api/sc-upload/imports/{id} endpoint
+- 2 new tests for delete functionality
+
+---
+
 ## [v1.15.0] — 2026-08-20
 
 ### Added
