@@ -6,6 +6,26 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.11.0] — 2026-08-20
+
+### Added
+- Search Console file upload: import SC data from CSV/JSON files
+- Auto-detect column names from Google Search Console exports
+- Import tracking with stats and history
+- 4 API endpoints: upload, imports, import detail, stats
+- File upload section on Search Console page
+- 4 passing integration tests
+
+---
+
+## [v1.10.0] — 2026-08-20
+
+### Added
+- Backend integration tests with FastAPI TestClient (17 tests)
+- Full API flow testing: Research → Idea → Plan content pipeline
+
+---
+
 ## [v1.9.0] — 2026-08-20
 
 ### Added
