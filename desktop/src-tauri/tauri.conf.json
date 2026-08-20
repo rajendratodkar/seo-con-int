@@ -1,0 +1,54 @@
+{
+  "build": {
+    "beforeDevCommand": "cd ..\\frontend && npm run dev",
+    "beforeBuildCommand": "cd ..\\frontend && npm run build",
+    "devPath": "http://localhost:5173",
+    "distDir": "../../frontend/dist",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "SEO Content Intelligence",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false
+    },
+    "bundle": {
+      "active": true,
+      "category": "Productivity",
+      "identifier": "com.sci.desktop",
+      "icon": [
+        "icons/icon.ico",
+        "icons/icon.png"
+      ],
+      "targets": [
+        "nsis"
+      ]
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://releases.example.com/sci/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "dialog": false,
+      "pubkey": "ZFc1MGNuVnpkR1ZrSUdOdmJXMWxiblE2SUcxcGJtbHphV2R1SUhCMVlteHBZeUJyWlhrNklEWTNSVVU1TWpRNU4wWkJRVFZHUlRJS1VsZFVhVmcyY0M5VFdreDFXalJxVjBGdGRrcHhNV3RIVFROWVRUTXZiMFV4YlZwMlptcERRbWxsZWtwdVNqTnVkemh3V1ZvMFltSUs=",
+      "windows": {
+        "installMode": "passive"
+      }
+    },
+    "windows": [
+      {
+        "title": "SEO Content Intelligence",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true
+      }
+    ]
+  }
+}

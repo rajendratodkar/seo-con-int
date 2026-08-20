@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Rust / Tauri
+desktop/src-tauri/target/
+
+# Data & runtime (never commit local data)
+data/raw/
+data/processed/
+data/cache/
+data/exports/
+data/backups/
+data/runtime/
+*.db
+*.sqlite
+
+# Environment
+.env
+
+# Updater signing keys (keep private)
+*.key
+desktop/src-tauri/dev-updater.key
+
+# Build artifacts
+*.tsbuildinfo
+*.js.map
+vite.config.js
+vite.config.d.ts
+
+# Verification screenshots
+verify_*.png
+bug_*.png
+
+# IDE
+.idea/
+.vscode/

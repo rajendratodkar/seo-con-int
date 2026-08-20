@@ -1,0 +1,19 @@
+[package]
+name = "seo-content-intelligence"
+version = "0.1.0"
+description = "SEO Content Intelligence desktop shell"
+authors = ["you"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }
+
+[dependencies]
+tauri = { version = "1", features = ["updater"] }
+keyring = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[features]
+# This feature is used for production builds and defaults to an empty list.
+custom-protocol = ["tauri/custom-protocol"]

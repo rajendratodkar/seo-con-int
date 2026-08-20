@@ -1,0 +1,20 @@
+Windows Registry Editor Version 5.00
+
+; Registers the sci:// custom URL scheme so web links can open the desktop app.
+; IMPORTANT: replace C:\\Path\\To\\seo-content-intelligence.exe with the real
+; path to the installed executable (double backslashes required in .reg files).
+; For packaged installs the NSIS installer should write these keys instead.
+
+[HKEY_CURRENT_USER\Software\Classes\sci]
+@="URL:SEO Content Intelligence Protocol"
+"URL Protocol"=""
+
+[HKEY_CURRENT_USER\Software\Classes\sci\DefaultIcon]
+@="C:\\Path\\To\\seo-content-intelligence.exe,0"
+
+[HKEY_CURRENT_USER\Software\Classes\sci\shell]
+
+[HKEY_CURRENT_USER\Software\Classes\sci\shell\open]
+
+[HKEY_CURRENT_USER\Software\Classes\sci\shell\open\command]
+@="\"C:\\Path\\To\\seo-content-intelligence.exe\" \"%1\""
