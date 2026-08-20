@@ -1,0 +1,132 @@
+# SEO Content Intelligence — TODO
+
+> Master task list for building the project. Work top-to-bottom, one phase at a time.
+> Check off items as they complete. **Never skip ahead within a phase.**
+
+**Stack:** Tauri + React / TypeScript + Python + SQLite
+**Rule of thumb:** Small steps · one phase at a time · no duplicate modules
+
+---
+
+## Progress Overview
+
+| Phase | Name | Status |
+|-------|------|--------|
+| 0 | Architecture | ✅ Done |
+| 1 | Desktop foundation | ✅ Done |
+| 2 | Website connection | ✅ Done |
+| 3 | Search Console | ✅ Done |
+| 4 | SEO engine | ✅ Done |
+| 5 | Recommendation engine ⭐ | ✅ Done |
+| 6 | Content audit | ✅ Done |
+| 7 | Content Ideas | ✅ Done |
+| 8 | Discussion | ✅ Done |
+| 9 | Article Planner | ✅ Done |
+| 10 | AI drafting | ✅ Done |
+| 11 | Advanced integrations | ✅ Done |
+| 12 | Desktop production hardening | ✅ Done |
+| 13 | Bulk operations | ✅ Done |
+| 14 | Monitoring & Alerts | ✅ Done |
+| 15 | A/B Testing | ✅ Done |
+| 16 | Competitor Analysis | ✅ Done |
+| 17 | Advanced Analytics Dashboard | ✅ Done |
+| 18 | Keyword Clustering | ✅ Done |
+| 19 | Schema Markup Builder | ✅ Done |
+| 20 | Content Calendar | ✅ Done |
+| 21 | Backlink Monitor | ✅ Done |
+| 22 | Page Speed Insights | ✅ Done |
+| 23 | Content Rewriter | ✅ Done |
+| 24 | SEO Checklist | ✅ Done |
+| 25 | Sitemap Generator | ✅ Done |
+| 26 | Report Generator | ✅ Done |
+| 27 | SERP Preview | ✅ Done |
+| 28 | Redirect Manager | ✅ Done |
+| 29 | AI Content Brief Generator ⭐ | 🔄 In Progress |
+
+---
+
+## Archived phases (0–28) — completed
+
+| Phase | Summary |
+|-------|---------|
+| **0** | Architecture: 9 top-level folders, `backend/app/` subfolders, `schema_v1.sql` (33 tables, 30 indexes), FastAPI skeleton (`create_app()` + lifespan), DI pattern (`api/dependencies.py`), 30 frontend pages planned |
+| **1** | Desktop: Tauri project (`desktop/src-tauri/`), React+TS frontend (Vite), FastAPI backend (`backend/app/main.py`), SQLite connection (`backend/app/database/connection.py`), Tauri→backend→frontend wiring (`main.rs` spawns `serve.py`), app icons |
+| **2** | Websites: `websites/` module (schemas, repository, service, router, detectors), platform detectors (WordPress, Astro/static), `integrations/sitemap/`, `integrations/crawler/` (crawler.py + parser.py + robots.py), `pages/` module, test-connection action |
+| **3** | Search Console: OAuth (`oauth.py`), property discovery, connect property, `api_client.py` (SC API queries), `importer.py` (historical + incremental), `normalizer.py` (raw→normalized, never overwrite raw), `analytics.py` (period comparison), SC page in UI |
+| **4** | SEO engine: `engines/seo/` (analyzer, scoring, technical, content, links, metadata, structured_data), `engines/search_console/opportunity_engine.py`, `engines/content/` (drafting, markdown), `seo_analysis/` module (rules registry, evaluator, findings), `references/` module (listing, categories, rules lookup), seeded references (Google SEO, SC, Structured Data, Spam Policies, SEBI, AMFI, RBI, Income Tax, AMC) |
+| **5** | Recommendations: 9-field recommendation objects (What·Why·Evidence·Data·Rule·Reference·Confidence·Severity·Action), data-based from SC, rule-based from SEO engine, AI labeled "AI suggestion", `seo_opportunities/` module + `Opportunities.tsx` |
+| **6** | Content audit: `content_audit/` module, verdicts (Keep·Improve·Refresh·Consolidate·Review), verdict driven by SC data + SEO findings (computed live), Audit page with filters |
+| **7** | Content Ideas: `content_ideas/` module (service: generate/validate/scoring), `integrations/youtube/` (extractor, metadata, transcript), `integrations/podcast/` (extractor, metadata), inputs (YouTube·Podcast·SC·Website·News·Manual), `research/` module (extract_topics/claims/questions, content_gap), Ideas page |
+| **8** | Discussion: `integrations/ai/providers.py` (complete() dispatcher + _openai/_gemini/_anthropic), provider abstraction, `discussion/` module (messages, decisions), ground in stored research, hallucination control, Discussion page (chat + decision log) |
+| **9** | Article Planner: `article_planner/` module (create_from_idea, _gather_evidence, _infer_intent, update_brief, mark_brief_ready), plan output (title, intent, audience, outline, questions, internal links, sources, facts, SC evidence, things to avoid), Article Planner page |
+| **10** | AI drafting: `engines/content/drafting.py` (stored as `ai_suggestion`), `content/` module (generate_draft, edit, approve, reject), Drafts & Publishing page (`Drafts.tsx`), fact-check against [VERIFY:] placeholders, SEO check against rules engine, human approval gate |
+| **11** | Integrations: WordPress (`integrations/wordpress/client.py` + `modules/publishing/`), GitHub/Astro (`integrations/github/client.py`), Google Analytics (`integrations/ga/client.py` + `modules/google_analytics/`), `topic_clusters/`, `internal_links/`, `reports/` (weekly) |
+| **12** | Desktop hardening: Tauri auto-updates, deep linking (`sci://`), OS keychain token storage (`keyring`), proxy (`SCI_HTTP_PROXY`/`SCI_HTTPS_PROXY` in `app/core/http.py`), crash reporting, usage analytics (5k cap), rotating logs, file drag-and-drop, `diagnostics/` module |
+| **13** | Bulk ops: `bulk_operations/` module, `POST /api/bulk/crawl`, `/analyze`, `/ideas`, job tracking (`GET /api/bulk/jobs`), background execution, validation (1–50 websites) |
+| **14** | Monitoring: `schema_v1_monitoring.sql` (4 tables), `monitoring/` module (checkers, alerters), 5 checkers (ranking/traffic/CTR/crawl/errors), 3 alerters (email/Slack/desktop), 15 API endpoints, auto-loading extension schemas, Monitoring page (Channels/Rules/History tabs) |
+| **15** | A/B Testing: `schema_v1_ab_testing.sql` (3 tables), `ab_testing/` module (measurement.py: z-test, 95% confidence), 9 API endpoints, A/B Testing page (create/start/collect/evaluate), results display (CTR, z-score, p-value, winner) |
+| **16** | Competitor Analysis: `schema_v1_competitors.sql` (3 tables), `competitor_analysis/` module (gap_engine: new_content/improve_existing/quick_win), 12 API endpoints, Competitor Analysis page (add/import/rankings/gaps) |
+| **17** | Analytics Dashboard: 6 analytics endpoints in `/api/reports/`, CSS-only charts (BarChart, Sparkline, HBar, KpiCard), Analytics page (4 tabs + period selector), KPIs (clicks, impressions, CTR, position, pages, queries) |
+| **18** | Keyword Clustering: `keyword_clustering/` module (Jaccard similarity engine), auto-clustering from SC data, 10 API endpoints, Keyword Clusters page (create/auto-cluster/add/remove) |
+| **19** | Schema Markup: `schema_markup/` module (generators.py: Article, FAQPage, HowTo, Product, BreadcrumbList, Organization), type-specific validation, 8 API endpoints, Schema Markup page (dynamic forms, validate, coverage stats) |
+| **20** | Content Calendar: `schema_v1_calendar.sql`, `content_calendar/` module, 7 API endpoints (CRUD + pipeline + deadlines), Content Calendar page (monthly grid + Kanban) |
+| **21** | Backlink Monitor: `schema_v1_backlinks.sql` (2 tables), `backlink_monitor/` module, change tracking (gained/lost), 8 API endpoints (CRUD + import + profile + changes), Backlinks page (KPIs, domains, CSV import) |
+| **22** | Page Speed: `schema_v1_page_speed.sql`, `page_speed/` module, SVG score gauges, CWV thresholds (LCP/FID/CLS/FCP/TTFB), 5 API endpoints, Page Speed page (overview, scores, manual record) |
+| **23** | Content Rewriter: `schema_v1_rewrites.sql`, `content_rewriter/` module, type-specific prompts (Title/Description/Heading/Custom), 5 API endpoints, Content Rewriter page (input, options, copy/select/apply, history) |
+| **24** | SEO Checklist: `schema_v1_checklist.sql` (2 tables), `seo_checklist/` module, auto-generate from findings + 13 standard items, 6 categories, 9 API endpoints, SEO Checklist page (per-page, progress bars) |
+| **25** | Sitemap Generator: `schema_v1_sitemap_gen.sql` (2 tables), `sitemap_generator/` module, settings (priority/changefreq/max/exclude), URL overrides, valid XML output, 7 API endpoints, Sitemap Generator page (settings, preview, download) |
+| **26** | Report Generator: `schema_v1_reports.sql` (2 tables), `report_generator/` module, data collection + HTML rendering + PDF export (`xhtml2pdf`), 7 API endpoints, Reports page (list, generate, preview, HTML/PDF download) |
+| **27** | SERP Preview: `serp_preview/` module, Google-style card rendering, title/description length limits, URL formatting, 5 API endpoints, SERP Preview page (live editor, page selector, real-time preview, tips) |
+| **28** | Redirect Manager: `schema_v1_redirects.sql` (2 tables), `redirect_manager/` module, CRUD + validation, bulk import (CSV), chain detection, check history, 11 API endpoints, Redirects page (stats, filter tabs, table, modals) |
+
+---
+
+## Phase 29 — AI Content Brief Generator ⭐
+
+> **Goal:** Given a target keyword, auto-generate a structured writing brief by
+> combining Search Console data, competitor analysis, keyword clustering, and
+> SERP features — then hand off to the Article Planner.
+
+- [ ] `database/schema/schema_v1_content_briefs.sql`: tables (`content_briefs`, `brief_sections`, `brief_competitors`)
+- [ ] `content_brief/` module: schemas, repository, service, router
+- [ ] `engines/brief/`: serp_analyzer, competitor_analyzer, structure_recommender
+- [ ] `serp_analyzer.py`: parse SERP features — PAA boxes, featured snippets, knowledge panels, video carousels, image packs
+- [ ] `competitor_analyzer.py`: top-10 competitor content length, headings structure, keyword density, media usage
+- [ ] `structure_recommender.py`: suggested outline (H2/H3 hierarchy), target word count, section priorities, internal link anchors
+- [ ] AI-powered brief generation: title options, meta description drafts, FAQ suggestions, key talking points
+- [ ] Brief output: target_keyword, primary_keyword, secondary_keywords, search_intent, target_word_count, outline, competitor_insights, serp_features, internal_links, faq, things_to_avoid, source_evidence
+- [ ] Integration: pull from Search Console (impressions/clicks/CTR/position), keyword clusters, competitor rankings, and SERP data
+- [ ] Save / edit / version briefs (auto-increment version on re-generate)
+- [ ] Export brief as Markdown (structured sections ready for copy-paste into editor)
+- [ ] 8 API endpoints under `/api/content-briefs/` (CRUD + generate + export + history)
+- [ ] Frontend Content Briefs page: keyword input → generate → editable brief with competitor tabs → export → send to Article Planner
+- [ ] **✅ Done when:** entering a keyword produces a data-driven, competitor-aware writing brief with outline, keywords, FAQ, and evidence links
+
+---
+
+## Standing Rules — check before every PR
+
+- [x] One responsibility per module (no `x.py` + `x_engine.py` + `x_service.py` + `x_manager.py` without distinct duties)
+- [x] No duplicate engines — `seo_analysis/` is the single owner of SEO analysis
+- [x] API integration ≠ business logic (Google API separate from SEO analysis)
+- [x] Database ≠ analysis (no calculations in models)
+- [x] AI ≠ truth (label AI suggestions — `ai_suggestion` status on every draft)
+- [x] Every recommendation has What · Why · Evidence · Source · Action
+- [x] Raw data is never overwritten (`raw → normalized → analysis`)
+
+---
+
+## Undocumented modules (built but not in a numbered phase)
+
+- [x] `rank_tracker/` module: schemas, repository, service, router — `schema_v1_rank_tracker.sql` (`tracked_keywords`, `keyword_daily_snapshots`, `keyword_alerts`)
+- [x] `serp_ab_testing/` module: schemas, repository, service, router — `schema_v1_serp_ab.sql` (`serp_ab_tests`, `serp_ab_variants`, `serp_ab_daily_snapshots`)
+- [x] Frontend pages: `RankTracker.tsx`, `SERPABTesting.tsx`
+
+---
+
+## Current next action
+
+> **Phase 29 — AI Content Brief Generator is in progress.** Follow the task list
+> above, top-to-bottom. Backend modules, database schema, API endpoints, and
+> frontend page to be implemented. Previous phases (0–28) all pass.
+> Run `cargo tauri dev` (Rust toolchain required) for the packaged desktop app.
