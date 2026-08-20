@@ -6,6 +6,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.17.0] — 2026-08-20
+
+### Added
+- Export button to download import history as CSV
+- GET /api/sc-upload/export endpoint
+- CSV includes all 13 import fields
+- 1 new test for export endpoint
+
+---
+
 ## [v1.16.0] — 2026-08-20
 
 ### Added
