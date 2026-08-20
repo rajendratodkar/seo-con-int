@@ -113,6 +113,7 @@ function FileUploadSection({ websiteId, onUploadSuccess }: { websiteId: number; 
 // Import history table component
 function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refreshKey: number }) {
   const [imports, setImports] = useState<Array<Record<string, unknown>> | null>(null);
+  const [stats, setStats] = useState<{ total_imports: number; total_rows_imported: number; last_import: string | null } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,10 +121,15 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
     setLoading(true);
     setError(null);
     try {
-      const result = await fetch(`/api/sc-upload/imports?website_id=${websiteId}`);
-      if (!result.ok) throw new Error("Failed to load imports");
-      const data = await result.json();
-      setImports(data);
+      const [importsRes, statsRes] = await Promise.all([
+        fetch(`/api/sc-upload/imports?website_id=${websiteId}`),
+        fetch(`/api/sc-upload/stats?website_id=${websiteId}`),
+      ]);
+      if (!importsRes.ok) throw new Error("Failed to load imports");
+      const importsData = await importsRes.json();
+      const statsData = await statsRes.json();
+      setImports(importsData);
+      setStats(statsData);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -158,6 +164,27 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
         </button>
       </div>
       {error && <ErrorBox message={error} />}
+
+      {/* Stats summary */}
+      {stats && (
+        <div className="row" style={{ marginTop: 12, gap: 16 }}>
+          <div className="card" style={{ flex: 1, textAlign: "center", padding: 12 }}>
+            <div style={{ fontSize: 24, fontWeight: 600 }}>{stats.total_imports ?? 0}</div>
+            <div className="muted" style={{ fontSize: 12 }}>Total Imports</div>
+          </div>
+          <div className="card" style={{ flex: 1, textAlign: "center", padding: 12 }}>
+            <div style={{ fontSize: 24, fontWeight: 600 }}>{(stats.total_rows_imported ?? 0).toLocaleString()}</div>
+            <div className="muted" style={{ fontSize: 12 }}>Total Rows Imported</div>
+          </div>
+          <div className="card" style={{ flex: 1, textAlign: "center", padding: 12 }}>
+            <div style={{ fontSize: 24, fontWeight: 600 }}>
+              {stats.last_import ? new Date(stats.last_import).toLocaleDateString() : "—"}
+            </div>
+            <div className="muted" style={{ fontSize: 12 }}>Last Import</div>
+          </div>
+        </div>
+      )}
+
       {!imports && !loading && <p className="muted">Click Refresh to load import history.</p>}
       {imports && imports.length === 0 && <p className="muted">No imports yet. Upload a file above to get started.</p>}
       {imports && imports.length > 0 && (
