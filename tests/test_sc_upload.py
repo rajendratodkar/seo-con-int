@@ -176,3 +176,15 @@ class TestScUploadImports:
         with _client() as c:
             r = c.delete("/api/sc-upload/imports/999999")
             assert r.status_code == 404
+
+    def test_export_imports_csv(self):
+        with _client() as c:
+            r = c.get("/api/sc-upload/export", params={"website_id": 1})
+            assert r.status_code == 200
+            assert r.headers["content-type"] == "text/csv; charset=utf-8"
+            assert "attachment" in r.headers.get("content-disposition", "")
+            # Verify CSV content has header row
+            lines = r.text.strip().split("\n")
+            assert len(lines) >= 1
+            assert "Filename" in lines[0]
+            assert "Import Type" in lines[0]

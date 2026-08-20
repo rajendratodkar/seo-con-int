@@ -174,6 +174,14 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
       <div className="row">
         <h3 style={{ margin: 0 }}>📋 Import History</h3>
         <span className="spacer" />
+        {imports && imports.length > 0 && (
+          <button
+            className="small"
+            onClick={() => window.open(`/api/sc-upload/export?website_id=${websiteId}`, "_blank")}
+          >
+            📥 Export CSV
+          </button>
+        )}
         <button className="small" onClick={load} disabled={loading}>
           {loading ? "Loading…" : "Refresh"}
         </button>

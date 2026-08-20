@@ -680,6 +680,7 @@ export const scUpload = {
     ),
   getImport: (id: number) => api.get<Record<string, unknown>>(`/sc-upload/imports/${id}`),
   deleteImport: (id: number) => api.delete<{ deleted: boolean; import_id: number }>(`/sc-upload/imports/${id}`),
+  exportUrl: (websiteId: number) => `/api/sc-upload/export?website_id=${websiteId}`,
   stats: (websiteId: number) => api.get<{ total_imports: number; total_rows_imported: number; last_import: string | null }>(
     `/sc-upload/stats?website_id=${websiteId}`,
   ),

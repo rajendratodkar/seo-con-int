@@ -1,5 +1,8 @@
 """Search Console File Upload HTTP layer."""
+import csv
+import io
 from fastapi import APIRouter, File, Form, UploadFile, Query
+from fastapi.responses import StreamingResponse
 from typing import Optional
 
 from app.api.dependencies import DbSession
@@ -79,3 +82,41 @@ def delete_import(db: DbSession, import_id: int):
         from app.core.exceptions import NotFoundError
         raise NotFoundError("import.not_found", f"Import {import_id} not found")
     return {"deleted": True, "import_id": import_id}
+
+
+@router.get("/export")
+def export_imports(db: DbSession, website_id: int = Query(...)):
+    """Export import history as CSV."""
+    from app.modules.sc_upload.repository import ScUploadRepository
+    repo = ScUploadRepository(db)
+    imports = repo.list_imports(website_id, limit=500)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Filename", "File Type", "Import Type", "Status",
+                     "Rows Total", "Rows Imported", "Rows Skipped", "Rows Errors",
+                     "Date Range Start", "Date Range End", "Created At", "Completed At"])
+
+    for imp in imports:
+        writer.writerow([
+            imp.get("id"),
+            imp.get("filename"),
+            imp.get("file_type"),
+            imp.get("import_type"),
+            imp.get("status"),
+            imp.get("rows_total", 0),
+            imp.get("rows_imported", 0),
+            imp.get("rows_skipped", 0),
+            imp.get("rows_errors", 0),
+            imp.get("date_range_start"),
+            imp.get("date_range_end"),
+            imp.get("created_at"),
+            imp.get("completed_at"),
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=sc_imports_{website_id}.csv"},
+    )
