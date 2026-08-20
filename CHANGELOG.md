@@ -6,6 +6,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.12.0] — 2026-08-20
+
+### Added
+- URL Inspection import: coverage, crawled_as, crawl_allowed, page_fetch, indexing status
+- Index Coverage import: status, category, count, affected URLs
+- Links import: target/source pages, anchor text, first/last seen dates
+- Auto-detect column names for all import types (CSV/JSON)
+- 3 new database tables: sc_url_inspection, sc_coverage, sc_links
+- 7 passing integration tests for all import types
+
+---
+
 ## [v1.11.0] — 2026-08-20
 
 ### Added
