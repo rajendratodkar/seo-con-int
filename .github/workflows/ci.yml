@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate schema
+        run: python scripts/database/validate_schema.py
+
+      - name: Run boot smoke test
+        run: python scripts/backend/boot_smoke.py
+
+      - name: Run unit tests
+        run: |
+          cd backend
+          python -m pytest ../tests/test_boot.py ../tests/test_diagnostics.py ../tests/test_edge_cases.py ../tests/test_markdown.py ../tests/test_ab_testing.py ../tests/test_monitoring.py ../tests/test_google_analytics.py -v --tb=short
+
+  frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: TypeScript typecheck
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: Production build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Check bundle size
+        working-directory: frontend
+        run: |
+          echo "=== Bundle Size Report ==="
+          ls -lh dist/assets/
+          GZIP=$(gzip -c dist/assets/index-*.js | wc -c)
+          echo "JS gzip size: $((GZIP / 1024)) KB"
