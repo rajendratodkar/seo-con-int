@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useWebsiteStore } from "../stores/websiteStore";
+import { useTheme } from "../stores/themeStore";
 import { UpdatePrompt } from "../components/UpdatePrompt";
 import { deepLinkToRoute, getLaunchUrl, listenDeepLink } from "../services/desktop";
 import { track } from "../services/telemetry";
@@ -56,6 +57,7 @@ function useOnlineStatus(): boolean {
 
 export function AppShell() {
   const { websites, active, setActive } = useWebsiteStore();
+  const { theme, toggle } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const online = useOnlineStatus();
@@ -106,6 +108,9 @@ export function AppShell() {
         <NavLink to="/settings" className={({ isActive }) => (isActive ? "active" : "")}>
           ⚙ Settings
         </NavLink>
+        <button className="theme-toggle" onClick={toggle}>
+          {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+        </button>
       </nav>
       <main className="main">
         <UpdatePrompt />

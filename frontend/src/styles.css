@@ -1,11 +1,13 @@
 /* Design tokens + global layout */
-:root {
+/* Dark theme (default) */
+:root,
+[data-theme="dark"] {
   --bg: #0f1115;
   --panel: #161a22;
   --panel-2: #1d2330;
   --border: #2a3242;
   --text: #e6e9ef;
-  --muted: #8b94a7;
+  --text-muted: #8b94a7;
   --accent: #4f8cff;
   --green: #34c77b;
   --amber: #f5a623;
@@ -14,6 +16,24 @@
   --radius: 8px;
   --sidebar-w: 220px;
 }
+
+/* Light theme */
+[data-theme="light"] {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --panel-2: #f0f1f3;
+  --border: #d8dce6;
+  --text: #1a1d26;
+  --text-muted: #6b7280;
+  --accent: #2563eb;
+  --green: #16a34a;
+  --amber: #d97706;
+  --red: #dc2626;
+  --violet: #7c3aed;
+}
+
+/* Alias for backward compat */
+:root { --muted: var(--text-muted); }
 
 * { box-sizing: border-box; }
 
@@ -122,3 +142,26 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent); }
 .mono { font-family: Consolas, monospace; font-size: 12px; }
 a.plain { color: var(--accent); text-decoration: none; }
 a.plain:hover { text-decoration: underline; }
+
+/* Theme transition */
+html { transition: background-color 0.2s, color 0.2s; }
+
+/* Theme toggle button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin: 8px 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
