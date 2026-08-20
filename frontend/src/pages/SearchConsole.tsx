@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { searchConsole as api } from "../services/backend";
 import { useWebsiteStore } from "../stores/websiteStore";
@@ -14,7 +14,7 @@ const IMPORT_TYPES = [
 ] as const;
 
 // File upload section component
-function FileUploadSection({ websiteId }: { websiteId: number }) {
+function FileUploadSection({ websiteId, onUploadSuccess }: { websiteId: number; onUploadSuccess?: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ message: string; rows_imported?: number } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -46,6 +46,7 @@ function FileUploadSection({ websiteId }: { websiteId: number }) {
       }
 
       setUploadResult(result);
+      onUploadSuccess?.();
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -109,6 +110,96 @@ function FileUploadSection({ websiteId }: { websiteId: number }) {
   );
 }
 
+// Import history table component
+function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refreshKey: number }) {
+  const [imports, setImports] = useState<Array<Record<string, unknown>> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetch(`/api/sc-upload/imports?website_id=${websiteId}`);
+      if (!result.ok) throw new Error("Failed to load imports");
+      const data = await result.json();
+      setImports(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load on mount and when refreshKey changes
+  useState(() => {
+    load();
+  });
+  useEffect(() => {
+    load();
+  }, [refreshKey]);
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "completed": return "var(--green)";
+      case "failed": return "var(--red)";
+      case "processing": return "var(--yellow)";
+      default: return "var(--muted)";
+    }
+  };
+
+  return (
+    <div className="card">
+      <div className="row">
+        <h3 style={{ margin: 0 }}>📋 Import History</h3>
+        <span className="spacer" />
+        <button className="small" onClick={load} disabled={loading}>
+          {loading ? "Loading…" : "Refresh"}
+        </button>
+      </div>
+      {error && <ErrorBox message={error} />}
+      {!imports && !loading && <p className="muted">Click Refresh to load import history.</p>}
+      {imports && imports.length === 0 && <p className="muted">No imports yet. Upload a file above to get started.</p>}
+      {imports && imports.length > 0 && (
+        <table className="data" style={{ marginTop: 12 }}>
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Rows Imported</th>
+              <th>Rows Skipped</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {imports.map((imp) => (
+              <tr key={Number(imp.id)}>
+                <td className="mono">{String(imp.filename)}</td>
+                <td>
+                  <span className="badge">
+                    {IMPORT_TYPES.find((t) => t.value === imp.import_type)?.label || String(imp.import_type)}
+                  </span>
+                </td>
+                <td>
+                  <span style={{ color: statusColor(String(imp.status)) }}>
+                    {String(imp.status)}
+                  </span>
+                </td>
+                <td>{Number(imp.rows_imported).toLocaleString()}</td>
+                <td>{Number(imp.rows_skipped ?? 0).toLocaleString()}</td>
+                <td className="muted">
+                  {imp.created_at ? new Date(String(imp.created_at)).toLocaleDateString() : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 export default function SearchConsole() {
   const [showUpload, setShowUpload] = useState(false);
   const { active } = useWebsiteStore();
@@ -116,6 +207,7 @@ export default function SearchConsole() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   if (!active) return <Empty text="Add a website first." />;
   if (status.loading) return <Loading />;
@@ -198,7 +290,14 @@ export default function SearchConsole() {
         </p>
       </div>
 
-      {showUpload && <FileUploadSection websiteId={active.id} />}
+      {showUpload && (
+        <FileUploadSection
+          websiteId={active.id}
+          onUploadSuccess={() => setHistoryRefreshKey((k) => k + 1)}
+        />
+      )}
+
+      <ImportHistoryTable websiteId={active.id} refreshKey={historyRefreshKey} />
 
       <PropertiesTable websiteId={active.id} />
     </>
