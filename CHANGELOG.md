@@ -6,6 +6,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.8.0] — 2026-08-20
+
+### Added
+- Page component tests for ABTesting, ArticlePlanner, Opportunities (24 new tests, 101 total)
+- Coverage improved: Statements 8.15%, Branches 8.48%, Lines 8.18%
+
+### Fixed
+- Badge component now handles undefined/null values gracefully
+
+---
+
 ## [v1.7.0] — 2026-08-20
 
 ### Added
