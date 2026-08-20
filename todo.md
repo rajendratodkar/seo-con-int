@@ -146,7 +146,117 @@
 
 ---
 
+## Phase 31 — Search Console File Upload
+
+> **Goal:** Allow users to import Search Console data from exported CSV/JSON files
+> when OAuth connection is not available (e.g., shared computers, corporate
+> restrictions, or manual data sharing).
+
+### Search Console Data Types (from export)
+
+Google Search Console exports provide the following data:
+
+#### Performance Report (CSV)
+| Column | Description | Example |
+|--------|-------------|--------|
+| Date | Data date | 2026-08-15 |
+| Query | Search keyword | "seo best practices" |
+| Page | Landing page URL | https://example.com/seo-guide |
+| Clicks | Number of clicks | 142 |
+| Impressions | Number of times shown | 5400 |
+| CTR | Click-through rate (clicks/impressions) | 2.63% |
+| Position | Average ranking position | 8.2 |
+
+#### Performance Report (JSON - API format)
+```json
+{
+  "rows": [
+    {
+      "keys": ["seo best practices", "https://example.com/seo-guide"],
+      "clicks": 142,
+      "impressions": 5400,
+      "ctr": 0.0263,
+      "position": 8.2
+    }
+  ]
+}
+```
+
+#### URL Inspection (CSV)
+| Column | Description |
+|--------|-------------|
+| URL | Page URL |
+| Coverage | Verdict (Pass, Fail, Excluded) |
+| Crawled as | Googlebot desktop/mobile |
+| Crawl allowed | Yes/No |
+| Page fetch | Successful/Failed |
+| Indexing | Indexed/Not indexed |
+| Last crawl | Date of last crawl |
+
+#### Index Coverage (CSV)
+| Column | Description |
+|--------|-------------|
+| Status | Error, Valid, Warning, Excluded |
+| Category | Specific issue type |
+| Count | Number of affected URLs |
+| Examples | Sample URLs |
+
+#### Links Report (CSV)
+| Column | Description |
+|--------|-------------|
+| Target page | Your page URL |
+| Source page | Linking page URL |
+| Anchor text | Link text |
+| First seen | When link was first detected |
+| Last seen | Most recent detection |
+
+### Implementation Tasks
+
+- [ ] `backend/app/modules/sc_upload/` module: schemas, repository, service, router
+- [ ] `schemas.py`: UploadRequest, UploadResult, ImportSummary
+- [ ] `repository.py`: Store imported data in `search_console_data` table
+- [ ] `service.py`: Parse CSV/JSON, validate columns, normalize data, import
+- [ ] `router.py`: POST `/api/search-console/upload` endpoint
+- [ ] CSV parser: Handle Google Search Console export format
+- [ ] JSON parser: Handle GSC API response format
+- [ ] Column mapping: Auto-detect column names (Date, Query, Page, Clicks, etc.)
+- [ ] Data validation: Check required columns, data types, date formats
+- [ ] Deduplication: Avoid duplicate rows when re-importing same data
+- [ ] Import summary: Return count of rows imported, skipped, errors
+- [ ] Frontend: File upload UI on Search Console page
+- [ ] Drag & drop support for CSV/JSON files
+- [ ] Preview imported data before committing
+- [ ] Progress indicator during import
+- [ ] Error handling: Show validation errors with row numbers
+- [ ] **✅ Done when:** user can upload a CSV/JSON file from Search Console export and see the data in analytics
+
+### Supported File Formats
+
+1. **CSV (Google Search Console export)**
+   - Direct export from Performance report
+   - Columns: Date, Query, Page, Clicks, Impressions, CTR, Position
+   - Encoding: UTF-8
+
+2. **JSON (API response format)**
+   - Response from Search Console API
+   - Structure: { rows: [{ keys: [...], clicks, impressions, ctr, position }] }
+
+3. **CSV (URL Inspection)**
+   - Export from URL Inspection tool
+   - Columns: URL, Coverage, Crawled as, Indexing, Last crawl
+
+4. **CSV (Index Coverage)**
+   - Export from Index Coverage report
+   - Columns: Status, Category, Count, Examples
+
+5. **CSV (Links Report)**
+   - Export from Links report
+   - Columns: Target page, Source page, Anchor text, First seen, Last seen
+
+---
+
 ## Current next action
 
-> **Phase 30 — Content Refresh Scheduler** is complete. All 30 phases are done!
+> **Phase 31 — Search Console File Upload** is next.
+> Implement file upload for Search Console data import.
 > Run `cargo tauri dev` (Rust toolchain required) for the packaged desktop app.

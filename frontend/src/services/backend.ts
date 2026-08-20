@@ -660,3 +660,26 @@ export const contentRefresh = {
   history: (websiteId: number) => api.get<RefreshHistory[]>(`/content-refresh/history?website_id=${websiteId}`),
   stats: (websiteId: number) => api.get<RefreshStats>(`/content-refresh/stats?website_id=${websiteId}`),
 };
+
+// --- Search Console File Upload -----------------------------------------------
+
+export const scUpload = {
+  upload: (file: File, websiteId: number, importType = "performance") => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("website_id", String(websiteId));
+    formData.append("import_type", importType);
+    return api.post<{ import_id: number; rows_imported: number; rows_skipped: number; message: string }>(
+      "/sc-upload/upload",
+      formData as unknown as Record<string, unknown>,
+    );
+  },
+  listImports: (websiteId: number) =>
+    api.get<{ id: number; filename: string; status: string; rows_imported: number; created_at: string }[]>(
+      `/sc-upload/imports?website_id=${websiteId}`,
+    ),
+  getImport: (id: number) => api.get<Record<string, unknown>>(`/sc-upload/imports/${id}`),
+  stats: (websiteId: number) => api.get<{ total_imports: number; total_rows_imported: number; last_import: string | null }>(
+    `/sc-upload/stats?website_id=${websiteId}`,
+  ),
+};

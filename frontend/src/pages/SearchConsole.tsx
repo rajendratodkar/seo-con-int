@@ -5,7 +5,82 @@ import { useWebsiteStore } from "../stores/websiteStore";
 import { Empty, ErrorBox, Loading } from "../components/common";
 import { useAsync } from "../hooks/useAsync";
 
+// File upload section component
+function FileUploadSection({ websiteId }: { websiteId: number }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ message: string; rows_imported?: number } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+    setUploadResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("website_id", String(websiteId));
+      formData.append("import_type", "performance");
+
+      const response = await fetch("/api/sc-upload/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Upload failed");
+      }
+
+      setUploadResult(result);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setUploading(false);
+      e.target.value = ""; // Reset file input
+    }
+  };
+
+  return (
+    <div className="card">
+      <h3>📁 Upload Search Console Data</h3>
+      <p className="muted">
+        Import data from Google Search Console exports. Supports CSV and JSON files.
+      </p>
+      <div className="row" style={{ alignItems: "center" }}>
+        <label className="btn" style={{ cursor: "pointer" }}>
+          {uploading ? "Uploading…" : "Choose CSV or JSON file"}
+          <input
+            type="file"
+            accept=".csv,.json"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            style={{ display: "none" }}
+          />
+        </label>
+        <span className="muted">Supported: Performance report CSV, GSC API JSON</span>
+      </div>
+      {uploadError && <ErrorBox message={uploadError} />}
+      {uploadResult && (
+        <div className="card" style={{ borderColor: "var(--green)", marginTop: 12 }}>
+          ✅ {uploadResult.message}
+          {uploadResult.rows_imported != null && (
+            <span className="muted" style={{ marginLeft: 8 }}>
+              ({uploadResult.rows_imported} rows imported)
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SearchConsole() {
+  const [showUpload, setShowUpload] = useState(false);
   const { active } = useWebsiteStore();
   const status = useAsync(() => api.oauthStatus(), []);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +158,7 @@ export default function SearchConsole() {
         <div className="row">
           <button className="primary" onClick={startOAuth}>1 · Connect Google account</button>
           <button onClick={discover}>2 · Discover properties</button>
+          <button onClick={() => setShowUpload((v) => !v)}>📁 Upload CSV/JSON</button>
         </div>
         {message && <p className="muted">{message}</p>}
         {error && <ErrorBox message={error} />}
@@ -91,6 +167,8 @@ export default function SearchConsole() {
           payloads are kept for recalculation; imported rows are never overwritten in place.
         </p>
       </div>
+
+      {showUpload && <FileUploadSection websiteId={active.id} />}
 
       <PropertiesTable websiteId={active.id} />
     </>

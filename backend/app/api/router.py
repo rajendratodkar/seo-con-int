@@ -20,6 +20,7 @@ from app.modules.rank_tracker.router import router as rank_tracker_router
 from app.modules.serp_ab_testing.router import router as serp_ab_testing_router
 from app.modules.content_brief.router import router as content_brief_router
 from app.modules.content_refresh.router import router as content_refresh_router
+from app.modules.sc_upload.router import router as sc_upload_router
 from app.modules.bulk_operations.router import router as bulk_operations_router
 from app.modules.monitoring.router import router as monitoring_router
 from app.modules.content.router import router as content_router
@@ -84,3 +85,4 @@ api_router.include_router(rank_tracker_router, prefix="/rank-tracker", tags=["ra
 api_router.include_router(serp_ab_testing_router, prefix="/serp-ab-tests", tags=["serp-ab-testing"])
 api_router.include_router(content_brief_router, prefix="/content-briefs", tags=["content-briefs"])
 api_router.include_router(content_refresh_router, prefix="/content-refresh", tags=["content-refresh"])
+api_router.include_router(sc_upload_router, prefix="/sc-upload", tags=["sc-upload"])
