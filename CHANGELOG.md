@@ -6,6 +6,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.7.0] — 2026-08-20
+
+### Added
+- Page component tests for References, Ideas, Keywords, Research (16 new tests, 89 total)
+- Coverage improved: Statements 6.42%, Branches 6.56%, Lines 6.41%
+
+---
+
+## [v1.6.0] — 2026-08-20
+
+### Added
+- Page component tests for Content, Audit, Dashboard (18 new tests, 73 total)
+- Shared `renderWithProviders` test utility with router + store wrappers
+- Coverage improved: Statements 4.48%, Branches 4.10%, Lines 4.56%
+
+---
+
 ## [v1.5.0] — 2026-08-20
 
 ### Added
