@@ -42,6 +42,7 @@
 | 27 | SERP Preview | ✅ Done |
 | 28 | Redirect Manager | ✅ Done |
 | 29 | AI Content Brief Generator ⭐ | 🔄 In Progress |
+| 30 | Content Refresh Scheduler | ⬜ Not started |
 
 ---
 
@@ -124,9 +125,30 @@
 
 ---
 
+## Phase 30 — Content Refresh Scheduler
+
+> **Goal:** Automatically detect stale content, score refresh urgency, and
+> generate actionable update recommendations with priority dates.
+
+- [ ] `database/schema/schema_v1_content_refresh.sql`: tables (`refresh_rules`, `refresh_schedules`, `refresh_history`)
+- [ ] `content_refresh/` module: schemas, repository, service, router
+- [ ] `engines/refresh/`: staleness_detector, trend_analyzer, priority_scorer
+- [ ] `staleness_detector.py`: flag pages older than N days, pages with declining impressions/clicks, pages with outdated dates in metadata
+- [ ] `trend_analyzer.py`: compute 30/60/90-day trends per page — declining, stable, growing
+- [ ] `priority_scorer.py`: score pages by urgency (staleness × traffic decline × revenue potential)
+- [ ] Refresh recommendations: what to update (title, content, links, schema), when to update (priority date), why (stale content, traffic drop, competitor improvements)
+- [ ] Integration: pull page age from crawl dates, SC trends from search_console_data, findings from seo_findings
+- [ ] Configurable rules: minimum age threshold, traffic drop %, staleness weight
+- [ ] Refresh history: track which pages were refreshed, what changed, impact on metrics
+- [ ] 7 API endpoints under `/api/content-refresh/` (rules, schedule, history, run-scan, recommendations)
+- [ ] Frontend Content Refresh page: staleness dashboard (red/yellow/green), scan results, refresh queue, history log
+- [ ] **✅ Done when:** entering a website produces a prioritized list of pages to refresh with reasons and suggested changes
+
+---
+
 ## Current next action
 
-> **Phase 29 — AI Content Brief Generator is in progress.** Follow the task list
-> above, top-to-bottom. Backend modules, database schema, API endpoints, and
-> frontend page to be implemented. Previous phases (0–28) all pass.
+> **Phase 30 — Content Refresh Scheduler** is next. Phase 29 (Content Brief Generator)
+> implementation is complete. Follow the task list above, top-to-bottom.
+> Backend modules, database schema, API endpoints, and frontend page to be implemented.
 > Run `cargo tauri dev` (Rust toolchain required) for the packaged desktop app.
