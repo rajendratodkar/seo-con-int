@@ -6,6 +6,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.9.0] — 2026-08-20
+
+### Added
+- Tests for all 25 page components (21 new tests, 120 total)
+- Direct API mocking for complex multi-useAsync pages
+- Coverage improved: Statements 22.47%, Branches 22.46%, Lines 23.32%
+
+---
+
 ## [v1.8.0] — 2026-08-20
 
 ### Added
