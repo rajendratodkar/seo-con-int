@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.15.0] — 2026-08-20
+
+### Added
+- Import statistics summary with 3 KPI cards (Total Imports, Total Rows, Last Import)
+- Parallel data fetching for imports and stats
+
+---
+
 ## [v1.14.0] — 2026-08-20
 
 ### Added
