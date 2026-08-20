@@ -5,11 +5,20 @@ import { useWebsiteStore } from "../stores/websiteStore";
 import { Empty, ErrorBox, Loading } from "../components/common";
 import { useAsync } from "../hooks/useAsync";
 
+// Import type options with descriptions
+const IMPORT_TYPES = [
+  { value: "performance", label: "Performance", desc: "Queries, pages, clicks, impressions, CTR, position" },
+  { value: "url_inspection", label: "URL Inspection", desc: "Coverage status, crawl state, indexing info" },
+  { value: "coverage", label: "Index Coverage", desc: "Error/warning/valid/excluded URL counts" },
+  { value: "links", label: "Links", desc: "Internal/external links, anchor text" },
+] as const;
+
 // File upload section component
 function FileUploadSection({ websiteId }: { websiteId: number }) {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ message: string; rows_imported?: number } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [importType, setImportType] = useState<string>("performance");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -23,7 +32,7 @@ function FileUploadSection({ websiteId }: { websiteId: number }) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("website_id", String(websiteId));
-      formData.append("import_type", "performance");
+      formData.append("import_type", importType);
 
       const response = await fetch("/api/sc-upload/upload", {
         method: "POST",
@@ -45,12 +54,31 @@ function FileUploadSection({ websiteId }: { websiteId: number }) {
     }
   };
 
+  const selectedType = IMPORT_TYPES.find((t) => t.value === importType);
+
   return (
     <div className="card">
       <h3>📁 Upload Search Console Data</h3>
       <p className="muted">
         Import data from Google Search Console exports. Supports CSV and JSON files.
       </p>
+      <div style={{ marginBottom: 12 }}>
+        <label className="muted" style={{ display: "block", marginBottom: 4 }}>
+          Import Type
+        </label>
+        <select
+          className="input"
+          value={importType}
+          onChange={(e) => setImportType(e.target.value)}
+          style={{ width: "100%" }}
+        >
+          {IMPORT_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label} — {t.desc}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="row" style={{ alignItems: "center" }}>
         <label className="btn" style={{ cursor: "pointer" }}>
           {uploading ? "Uploading…" : "Choose CSV or JSON file"}
@@ -62,7 +90,9 @@ function FileUploadSection({ websiteId }: { websiteId: number }) {
             style={{ display: "none" }}
           />
         </label>
-        <span className="muted">Supported: Performance report CSV, GSC API JSON</span>
+        <span className="muted">
+          {selectedType ? `${selectedType.label} export` : "Select import type above"}
+        </span>
       </div>
       {uploadError && <ErrorBox message={uploadError} />}
       {uploadResult && (
