@@ -6,6 +6,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.14.0] — 2026-08-20
+
+### Added
+- Import history table below upload section showing previous imports
+- Columns: filename, type, status, rows imported, rows skipped, date
+- Color-coded status indicators (completed/failed/processing)
+- Auto-refresh after successful uploads
+- Manual refresh button for import history
+
+---
+
 ## [v1.13.0] — 2026-08-20
 
 ### Added
