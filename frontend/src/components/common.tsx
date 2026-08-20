@@ -42,7 +42,8 @@ const TONES: Record<string, string> = {
 };
 
 export function Badge({ value }: { value: string }) {
-  return <span className={`badge ${TONES[value] ?? "gray"}`}>{value.replace(/_/g, " ")}</span>;
+  const v = String(value ?? "unknown");
+  return <span className={`badge ${TONES[v] ?? "gray"}`}>{v.replace(/_/g, " ")}</span>;
 }
 
 /** Rule 5: AI output always gets an explicit badge. */
