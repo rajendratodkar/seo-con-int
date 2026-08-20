@@ -148,3 +148,31 @@ class TestScUploadImports:
             assert r.status_code == 200
             stats = r.json()
             assert "total_imports" in stats
+
+    def test_delete_import(self):
+        with _client() as c:
+            # Create a website and upload a file first
+            site_id = _create_website(c, "SC Delete Test", "https://delete.example.com")
+            r = c.post(
+                "/api/sc-upload/upload",
+                files={"file": ("perf.csv", PERFORMANCE_CSV, "text/csv")},
+                data={"website_id": site_id, "import_type": "performance"},
+            )
+            assert r.status_code == 200
+            import_id = r.json()["import_id"]
+
+            # Delete the import
+            r = c.delete(f"/api/sc-upload/imports/{import_id}")
+            assert r.status_code == 200
+            assert r.json()["deleted"] is True
+
+            # Verify it's gone
+            r = c.get(f"/api/sc-upload/imports/{import_id}")
+            assert r.status_code == 404
+
+            c.delete(f"/api/websites/{site_id}")
+
+    def test_delete_nonexistent_import(self):
+        with _client() as c:
+            r = c.delete("/api/sc-upload/imports/999999")
+            assert r.status_code == 404

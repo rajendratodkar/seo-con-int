@@ -116,6 +116,7 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
   const [stats, setStats] = useState<{ total_imports: number; total_rows_imported: number; last_import: string | null } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -134,6 +135,20 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (importId: number) => {
+    if (!confirm("Delete this import? This cannot be undone.")) return;
+    setDeletingId(importId);
+    try {
+      const res = await fetch(`/api/sc-upload/imports/${importId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete import");
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -197,6 +212,7 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
               <th>Rows Imported</th>
               <th>Rows Skipped</th>
               <th>Date</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -217,6 +233,16 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
                 <td>{Number(imp.rows_skipped ?? 0).toLocaleString()}</td>
                 <td className="muted">
                   {imp.created_at ? new Date(String(imp.created_at)).toLocaleDateString() : "—"}
+                </td>
+                <td>
+                  <button
+                    className="small"
+                    style={{ color: "var(--red)" }}
+                    onClick={() => handleDelete(Number(imp.id))}
+                    disabled={deletingId === Number(imp.id)}
+                  >
+                    {deletingId === Number(imp.id) ? "…" : "🗑️"}
+                  </button>
                 </td>
               </tr>
             ))}

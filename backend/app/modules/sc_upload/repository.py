@@ -119,6 +119,17 @@ class ScUploadRepository:
         self.db.commit()
         return row["id"]
 
+    def delete_import(self, import_id: int) -> bool:
+        """Delete an import record."""
+        row = self.db.execute(
+            text("DELETE FROM sc_imports WHERE id = :id RETURNING id"),
+            {"id": import_id},
+        ).mappings().first()
+        if row:
+            self.db.commit()
+            return True
+        return False
+
     def get_import_stats(self, website_id: int) -> dict:
         """Get import statistics for a website."""
         row = self.db.execute(

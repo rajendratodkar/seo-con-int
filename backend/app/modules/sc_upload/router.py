@@ -67,3 +67,15 @@ def get_import_stats(db: DbSession, website_id: int = Query(...)):
     from app.modules.sc_upload.repository import ScUploadRepository
     repo = ScUploadRepository(db)
     return repo.get_import_stats(website_id)
+
+
+@router.delete("/imports/{import_id}")
+def delete_import(db: DbSession, import_id: int):
+    """Delete an import record and its associated data."""
+    from app.modules.sc_upload.repository import ScUploadRepository
+    repo = ScUploadRepository(db)
+    result = repo.delete_import(import_id)
+    if not result:
+        from app.core.exceptions import NotFoundError
+        raise NotFoundError("import.not_found", f"Import {import_id} not found")
+    return {"deleted": True, "import_id": import_id}
