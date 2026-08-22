@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { searchConsole as api } from "../services/backend";
+import { searchConsole as api, scUpload } from "../services/backend";
 import { useWebsiteStore } from "../stores/websiteStore";
 import { Empty, ErrorBox, Loading } from "../components/common";
 import { useAsync } from "../hooks/useAsync";
@@ -32,18 +32,11 @@ function FileUploadSection({ websiteId, onUploadSuccess }: { websiteId: number; 
       const formData = new FormData();
       formData.append("file", file);
       formData.append("website_id", String(websiteId));
-      formData.append("import_type", importType);
 
-      const response = await fetch("/api/sc-upload/upload", {
-        method: "POST",
-        body: formData,
-      });
+      // GSC ZIP exports ("Performance on Search") are always performance data.
+      const type = file.name.toLowerCase().endsWith(".zip") ? "performance" : importType;
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Upload failed");
-      }
+      const result = await scUpload.upload(file, websiteId, type);
 
       setUploadResult(result);
       onUploadSuccess?.();
@@ -61,7 +54,9 @@ function FileUploadSection({ websiteId, onUploadSuccess }: { websiteId: number; 
     <div className="card">
       <h3>📁 Upload Search Console Data</h3>
       <p className="muted">
-        Import data from Google Search Console exports. Supports CSV and JSON files.
+        Import data from Google Search Console exports. Supports CSV, JSON, and the
+        “Performance on Search” ZIP download (Chart, Queries, Pages, Countries, Devices).
+        ZIP files are always imported as Performance.
       </p>
       <div style={{ marginBottom: 12 }}>
         <label className="muted" style={{ display: "block", marginBottom: 4 }}>
@@ -82,10 +77,10 @@ function FileUploadSection({ websiteId, onUploadSuccess }: { websiteId: number; 
       </div>
       <div className="row" style={{ alignItems: "center" }}>
         <label className="btn" style={{ cursor: "pointer" }}>
-          {uploading ? "Uploading…" : "Choose CSV or JSON file"}
+          {uploading ? "Uploading…" : "Choose CSV, JSON or ZIP file"}
           <input
             type="file"
-            accept=".csv,.json"
+            accept=".csv,.json,.zip"
             onChange={handleFileUpload}
             disabled={uploading}
             style={{ display: "none" }}
@@ -122,13 +117,10 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
     setLoading(true);
     setError(null);
     try {
-      const [importsRes, statsRes] = await Promise.all([
-        fetch(`/api/sc-upload/imports?website_id=${websiteId}`),
-        fetch(`/api/sc-upload/stats?website_id=${websiteId}`),
+      const [importsData, statsData] = await Promise.all([
+        scUpload.listImports(websiteId),
+        scUpload.stats(websiteId),
       ]);
-      if (!importsRes.ok) throw new Error("Failed to load imports");
-      const importsData = await importsRes.json();
-      const statsData = await statsRes.json();
       setImports(importsData);
       setStats(statsData);
     } catch (e) {
@@ -142,8 +134,7 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
     if (!confirm("Delete this import? This cannot be undone.")) return;
     setDeletingId(importId);
     try {
-      const res = await fetch(`/api/sc-upload/imports/${importId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete import");
+      await scUpload.deleteImport(importId);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -177,7 +168,7 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
         {imports && imports.length > 0 && (
           <button
             className="small"
-            onClick={() => window.open(`/api/sc-upload/export?website_id=${websiteId}`, "_blank")}
+            onClick={() => window.open(scUpload.exportUrl(websiteId), "_blank")}
           >
             📥 Export CSV
           </button>
@@ -262,7 +253,6 @@ function ImportHistoryTable({ websiteId, refreshKey }: { websiteId: number; refr
 }
 
 export default function SearchConsole() {
-  const [showUpload, setShowUpload] = useState(false);
   const { active } = useWebsiteStore();
   const status = useAsync(() => api.oauthStatus(), []);
   const [error, setError] = useState<string | null>(null);
@@ -341,22 +331,20 @@ export default function SearchConsole() {
         <div className="row">
           <button className="primary" onClick={startOAuth}>1 · Connect Google account</button>
           <button onClick={discover}>2 · Discover properties</button>
-          <button onClick={() => setShowUpload((v) => !v)}>📁 Upload CSV/JSON</button>
         </div>
         {message && <p className="muted">{message}</p>}
         {error && <ErrorBox message={error} />}
         <p className="muted">
           Requires a Google OAuth client configured in <Link to="/settings">Settings → Google</Link>. Raw API
-          payloads are kept for recalculation; imported rows are never overwritten in place.
+          payloads are kept for recalculation; imported rows are never overwritten in place. You can also
+          upload exports manually below without connecting Google.
         </p>
       </div>
 
-      {showUpload && (
-        <FileUploadSection
-          websiteId={active.id}
-          onUploadSuccess={() => setHistoryRefreshKey((k) => k + 1)}
-        />
-      )}
+      <FileUploadSection
+        websiteId={active.id}
+        onUploadSuccess={() => setHistoryRefreshKey((k) => k + 1)}
+      />
 
       <ImportHistoryTable websiteId={active.id} refreshKey={historyRefreshKey} />
 

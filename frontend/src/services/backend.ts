@@ -1,5 +1,5 @@
 /** Typed endpoint helpers — one per backend prefix. Pages never call fetch directly. */
-import { api } from "./api";
+import { api, apiUrl, uploadFile } from "./api";
 import type {
   AiProvider, ArticleDraft, ArticlePlan, AuditRow, ContentIdea, Discussion, DraftSummary,
   Finding, Keyword, Opportunity, Page, Paged, PublishConfig, PublishLog, PublishResult,
@@ -669,9 +669,9 @@ export const scUpload = {
     formData.append("file", file);
     formData.append("website_id", String(websiteId));
     formData.append("import_type", importType);
-    return api.post<{ import_id: number; rows_imported: number; rows_skipped: number; message: string }>(
+    return uploadFile<{ import_id: number; rows_imported: number; rows_skipped: number; message: string }>(
       "/sc-upload/upload",
-      formData as unknown as Record<string, unknown>,
+      formData,
     );
   },
   listImports: (websiteId: number) =>
@@ -680,7 +680,7 @@ export const scUpload = {
     ),
   getImport: (id: number) => api.get<Record<string, unknown>>(`/sc-upload/imports/${id}`),
   deleteImport: (id: number) => api.delete<{ deleted: boolean; import_id: number }>(`/sc-upload/imports/${id}`),
-  exportUrl: (websiteId: number) => `/api/sc-upload/export?website_id=${websiteId}`,
+  exportUrl: (websiteId: number) => apiUrl(`/sc-upload/export?website_id=${websiteId}`),
   stats: (websiteId: number) => api.get<{ total_imports: number; total_rows_imported: number; last_import: string | null }>(
     `/sc-upload/stats?website_id=${websiteId}`,
   ),

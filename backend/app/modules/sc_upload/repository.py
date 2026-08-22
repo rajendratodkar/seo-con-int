@@ -62,8 +62,9 @@ class ScUploadRepository:
                                  rows: list[dict]) -> int:
         """Insert performance data rows into search_console_data.
 
-        Each row should have: date, query, page_url, clicks, impressions, ctr, position.
-        Uses INSERT OR REPLACE to handle duplicates.
+        Each row should have: date, query, page_url, clicks, impressions, ctr,
+        position, and optionally device/country.
+        Uses INSERT OR REPLACE semantics via ON CONFLICT to update in place.
         """
         if not rows:
             return 0
@@ -74,8 +75,11 @@ class ScUploadRepository:
                 self.db.execute(
                     text(
                         "INSERT INTO search_console_data "
-                        "(website_id, property_id, date, query, page_url, clicks, impressions, ctr, position) "
-                        "VALUES (:wid, :pid, :date, :query, :page, :clicks, :impressions, :ctr, :position)"
+                        "(website_id, property_id, date, query, page_url, clicks, impressions, ctr, position, device, country) "
+                        "VALUES (:wid, :pid, :date, :query, :page, :clicks, :impressions, :ctr, :position, :device, :country) "
+                        "ON CONFLICT (property_id, date, query, page_url, device, country) DO UPDATE SET "
+                        "clicks=excluded.clicks, impressions=excluded.impressions, "
+                        "ctr=excluded.ctr, position=excluded.position"
                     ),
                     {
                         "wid": website_id,
@@ -83,15 +87,17 @@ class ScUploadRepository:
                         "date": row.get("date", ""),
                         "query": row.get("query"),
                         "page": row.get("page_url"),
-                        "clicks": row.get("clicks", 0),
-                        "impressions": row.get("impressions", 0),
-                        "ctr": row.get("ctr", 0.0),
-                        "position": row.get("position", 0.0),
+                        "clicks": int(row.get("clicks") or 0),
+                        "impressions": int(row.get("impressions") or 0),
+                        "ctr": float(row.get("ctr") or 0.0),
+                        "position": float(row.get("position") or 0.0),
+                        "device": row.get("device"),
+                        "country": row.get("country"),
                     },
                 )
                 imported += 1
             except Exception:
-                # Skip duplicates or invalid rows
+                # Skip invalid rows
                 self.db.rollback()
                 continue
 

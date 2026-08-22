@@ -27,13 +27,12 @@ async def upload_sc_file(
     The data will be parsed, validated, and imported into the database.
     """
     content = await file.read()
-    file_content = content.decode("utf-8")
 
     service = ScUploadService(db)
     result = service.parse_and_import(
         website_id=website_id,
         filename=file.filename or "upload.csv",
-        file_content=file_content,
+        file_content=content,
         import_type=import_type,
     )
 

@@ -1,5 +1,4 @@
-/// <reference types="vitest" />
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 // Backend runs on 127.0.0.1:8317 (SCI_BACKEND_PORT). Vite proxies /api in dev.

@@ -1,7 +1,7 @@
 import { render, type RenderOptions } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "./stores/themeStore";
-import { WebsiteStoreContext, type WebsiteStoreValue } from "./stores/websiteStore";
+import { WebsiteStoreContext, type WebsiteStore } from "./stores/websiteStore";
 import type { Website } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -13,6 +13,8 @@ export const MOCK_WEBSITE: Website = {
   name: "Test Site",
   url: "https://example.com",
   platform: "wordpress",
+  sitemap_url: null,
+  status: "active",
   created_at: "2026-01-01T00:00:00",
 };
 

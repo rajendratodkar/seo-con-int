@@ -1,5 +1,7 @@
 """Tests for Search Console File Upload module."""
+import io
 import sys
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
@@ -50,6 +52,25 @@ https://example.com/,https://backlink1.com/article,Example Site,2026-01-15,2026-
 https://example.com/,https://backlink2.com/resources,click here,2026-03-20,2026-07-25
 https://example.com/about,https://partner.com/team,About Page,2026-06-01,2026-08-12
 """
+
+# GSC "Performance on Search" ZIP export shape
+GSC_ZIP_FILES = {
+    "Chart.csv": "Date,Clicks,Impressions,CTR,Position\n2026-07-22,1,324,0.31%,36.9\n2026-07-23,3,311,0.96%,41.6\n",
+    "Queries.csv": "Top queries,Clicks,Impressions,CTR,Position\nseo best practices,5,28,17.86%,7.57\ncontent marketing,2,12,16.67%,3.5\n",
+    "Pages.csv": "Top pages,Clicks,Impressions,CTR,Position\nhttps://example.com/seo-guide,10,144,6.94%,13.64\nhttps://example.com/content,6,303,1.98%,10.25\n",
+    "Countries.csv": "Country,Clicks,Impressions,CTR,Position\nIndia,86,8352,1.03%,44.1\nUnited States,0,366,0%,68.13\n",
+    "Devices.csv": "Device,Clicks,Impressions,CTR,Position\nDesktop,57,8956,0.64%,54.64\nMobile,31,2932,1.06%,23.92\n",
+    "Filters.csv": "Filter,Value\nSearch type,Web\nDate,Last 28 days\n",
+}
+
+
+def _gsc_zip_bytes(filename="https___example.com_-Performance-on-Search-2026-08-21.zip") -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name, content in GSC_ZIP_FILES.items():
+            zf.writestr(name, content)
+    buf.seek(0)
+    return (filename, buf.read(), "application/zip")
 
 
 def _create_website(c, name, url):
@@ -132,6 +153,54 @@ class TestLinksImport:
             result = r.json()
             assert result["rows_imported"] == 3
             assert result["rows_errors"] == 0
+            c.delete(f"/api/websites/{site_id}")
+
+
+class TestGscZipImport:
+    def test_upload_gsc_performance_zip(self):
+        with _client() as c:
+            site_id = _create_website(c, "SC Zip Test", "https://example.com")
+            filename, content, mime = _gsc_zip_bytes()
+            r = c.post(
+                "/api/sc-upload/upload",
+                files={"file": (filename, content, mime)},
+                data={"website_id": site_id, "import_type": "performance"},
+            )
+            assert r.status_code == 200, r.text
+            result = r.json()
+            # 2 chart + 2 queries + 2 pages + 2 countries + 2 devices
+            assert result["rows_imported"] == 10, result
+            assert result["rows_errors"] == 0
+            assert result["date_range_start"] == "2026-07-22"
+            assert result["date_range_end"] == "2026-07-23"
+            c.delete(f"/api/websites/{site_id}")
+
+    def test_zip_forced_to_performance(self):
+        """ZIP uploads ignore the selected import_type and import as performance."""
+        with _client() as c:
+            site_id = _create_website(c, "SC Zip Force", "https://example.com")
+            filename, content, mime = _gsc_zip_bytes()
+            r = c.post(
+                "/api/sc-upload/upload",
+                files={"file": (filename, content, "application/zip")},
+                data={"website_id": site_id, "import_type": "url_inspection"},
+            )
+            assert r.status_code == 200, r.text
+            result = r.json()
+            assert result["rows_imported"] == 10, result
+            c.delete(f"/api/websites/{site_id}")
+
+    def test_invalid_zip_returns_no_rows(self):
+        with _client() as c:
+            site_id = _create_website(c, "SC Bad Zip", "https://example.com")
+            r = c.post(
+                "/api/sc-upload/upload",
+                files={"file": ("bad.zip", b"this is not a zip at all", "application/zip")},
+                data={"website_id": site_id, "import_type": "performance"},
+            )
+            assert r.status_code == 200, r.text
+            result = r.json()
+            assert result["rows_imported"] == 0
             c.delete(f"/api/websites/{site_id}")
 
 
