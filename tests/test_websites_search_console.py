@@ -499,12 +499,12 @@ class TestSearchConsoleOAuth:
         assert "configured" in body
         assert isinstance(body["configured"], bool)
 
-    def test_oauth_url_when_not_configured(self, client):
+    def test_oauth_url_when_not_configured(self, app_client):
         """Without Google credentials, configured should be False."""
-        r = client.get("/api/search-console/oauth/url")
+        r = app_client.get("/api/search-console/oauth/url")
         assert r.status_code == 200
         body = r.json()
-        # In test env, Google OAuth is not configured
+        # In-process app has no Google OAuth credentials
         assert body["configured"] is False
 
     def test_oauth_callback_rejects_bad_state(self, client):
