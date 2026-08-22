@@ -216,23 +216,24 @@ Google Search Console exports provide the following data:
 
 ### Implementation Tasks
 
-- [ ] `backend/app/modules/sc_upload/` module: schemas, repository, service, router
-- [ ] `schemas.py`: UploadRequest, UploadResult, ImportSummary
-- [ ] `repository.py`: Store imported data in `search_console_data` table
-- [ ] `service.py`: Parse CSV/JSON, validate columns, normalize data, import
-- [ ] `router.py`: POST `/api/search-console/upload` endpoint
-- [ ] CSV parser: Handle Google Search Console export format
-- [ ] JSON parser: Handle GSC API response format
-- [ ] Column mapping: Auto-detect column names (Date, Query, Page, Clicks, etc.)
-- [ ] Data validation: Check required columns, data types, date formats
-- [ ] Deduplication: Avoid duplicate rows when re-importing same data
-- [ ] Import summary: Return count of rows imported, skipped, errors
-- [ ] Frontend: File upload UI on Search Console page
-- [ ] Drag & drop support for CSV/JSON files
+- [x] `backend/app/modules/sc_upload/` module: schemas, repository, service, router
+- [x] `schemas.py`: UploadRequest, UploadResult, ImportSummary
+- [x] `repository.py`: Store imported data in `search_console_data` table
+- [x] `service.py`: Parse CSV/JSON/ZIP, validate columns, normalize data, import
+- [x] `router.py`: POST `/api/sc-upload/upload` endpoint
+- [x] CSV parser: Handle Google Search Console export format
+- [x] JSON parser: Handle GSC API response format
+- [x] ZIP parser: Handle GSC "Performance on Search" ZIP export (Chart, Queries, Pages, Countries, Devices)
+- [x] Column mapping: Auto-detect column names (Date, Query, Page, Clicks, etc.)
+- [x] Data validation: Check required columns, data types, date formats
+- [x] Deduplication: COALESCE-based upsert for rows with NULL device/country
+- [x] Import summary: Return count of rows imported, skipped, errors, date range
+- [x] Frontend: File upload UI on Search Console page (always visible)
+- [ ] Drag & drop support for CSV/JSON/ZIP files
 - [ ] Preview imported data before committing
 - [ ] Progress indicator during import
 - [ ] Error handling: Show validation errors with row numbers
-- [ ] **✅ Done when:** user can upload a CSV/JSON file from Search Console export and see the data in analytics
+- [x] **✅ Done when:** user can upload a CSV/JSON/ZIP file from Search Console export and see the data in analytics
 
 ### Supported File Formats
 
@@ -245,15 +246,20 @@ Google Search Console exports provide the following data:
    - Response from Search Console API
    - Structure: { rows: [{ keys: [...], clicks, impressions, ctr, position }] }
 
-3. **CSV (URL Inspection)**
+3. **ZIP (GSC "Performance on Search" export)**
+   - Chart.csv: per-day performance rows
+   - Queries.csv, Pages.csv, Countries.csv, Devices.csv: aggregated dimensions
+   - CTR percentage strings normalized to ratios, commas stripped
+
+4. **CSV (URL Inspection)**
    - Export from URL Inspection tool
    - Columns: URL, Coverage, Crawled as, Indexing, Last crawl
 
-4. **CSV (Index Coverage)**
+5. **CSV (Index Coverage)**
    - Export from Index Coverage report
    - Columns: Status, Category, Count, Examples
 
-5. **CSV (Links Report)**
+6. **CSV (Links Report)**
    - Export from Links report
    - Columns: Target page, Source page, Anchor text, First seen, Last seen
 
@@ -261,6 +267,8 @@ Google Search Console exports provide the following data:
 
 ## Current next action
 
-> **Phase 31 — Search Console File Upload** is next.
-> Implement file upload for Search Console data import.
-> Run `cargo tauri dev` (Rust toolchain required) for the packaged desktop app.
+> All 34 phases complete. Consider improvements:
+> - Drag & drop file upload support
+> - Data preview before import
+> - Row-level error reporting
+> - Run `cargo tauri dev` (Rust toolchain required) for the packaged desktop app.
