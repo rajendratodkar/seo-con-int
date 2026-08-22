@@ -14,12 +14,7 @@ dist/
 desktop/src-tauri/target/
 
 # Data & runtime (never commit local data)
-data/raw/
-data/processed/
-data/cache/
-data/exports/
-data/backups/
-data/runtime/
+data/
 *.db
 *.sqlite
 
@@ -39,6 +34,9 @@ vite.config.d.ts
 # Verification screenshots
 verify_*.png
 bug_*.png
+
+# Test coverage
+frontend/coverage/
 
 # IDE
 .idea/
