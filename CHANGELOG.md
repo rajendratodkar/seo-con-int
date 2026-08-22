@@ -6,6 +6,32 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v1.18.0] — 2026-08-22
+
+### Added
+- GSC ZIP export upload: parse Google Search Console "Performance on Search" ZIP files (Chart, Queries, Pages, Countries, Devices)
+- Metric normalization: CTR percentage strings converted to ratios, comma/percent stripping
+- Device and country columns for performance data with ON CONFLICT upsert
+- Desktop/Tauri API readiness: absolute backend URL for packaged app, FormData-aware upload client
+- Always-visible upload section accepting CSV, JSON, and ZIP files
+- Website existence validation before import (returns 404 instead of 500)
+- COALESCE-based upsert to correctly handle NULL device/country in SQLite
+- `python-multipart` dependency for FastAPI file uploads
+- 3 new GSC ZIP upload tests (valid, forced-to-performance, invalid ZIP)
+
+### Fixed
+- Non-existent website_id now returns proper 404 error instead of FOREIGN KEY crash
+- SQLite ON CONFLICT upsert for rows with NULL device/country (UNIQUE treats NULL as distinct)
+- test_oauth_url_when_not_configured uses in-process app client to work regardless of OAuth config
+
+### Changed
+- CORS origins include `http://tauri.localhost` for desktop app
+- Frontend upload uses typed `uploadFile` client preserving multipart boundaries
+- Import type dropdown removed; ZIP uploads auto-detected as performance
+- `data/` and `frontend/coverage/` added to .gitignore
+
+---
+
 ## [v1.17.0] — 2026-08-20
 
 ### Added
