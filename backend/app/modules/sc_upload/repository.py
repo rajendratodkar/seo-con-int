@@ -72,29 +72,57 @@ class ScUploadRepository:
         imported = 0
         for row in rows:
             try:
-                self.db.execute(
+                params = {
+                    "wid": website_id,
+                    "pid": property_id,
+                    "date": row.get("date", ""),
+                    "query": row.get("query"),
+                    "page": row.get("page_url"),
+                    "clicks": int(row.get("clicks") or 0),
+                    "impressions": int(row.get("impressions") or 0),
+                    "ctr": float(row.get("ctr") or 0.0),
+                    "position": float(row.get("position") or 0.0),
+                    "device": row.get("device"),
+                    "country": row.get("country"),
+                }
+                # SQLite UNIQUE treats NULL as distinct, so ON CONFLICT never
+                # matches rows with NULL device/country.  Use a COALESCE-based
+                # SELECT to find existing rows instead.
+                # Use empty-string sentinel for NULLs (SQLite UNIQUE ignores NULLs)
+                _NIL = ""
+                existing = self.db.execute(
                     text(
-                        "INSERT INTO search_console_data "
-                        "(website_id, property_id, date, query, page_url, clicks, impressions, ctr, position, device, country) "
-                        "VALUES (:wid, :pid, :date, :query, :page, :clicks, :impressions, :ctr, :position, :device, :country) "
-                        "ON CONFLICT (property_id, date, query, page_url, device, country) DO UPDATE SET "
-                        "clicks=excluded.clicks, impressions=excluded.impressions, "
-                        "ctr=excluded.ctr, position=excluded.position"
+                        "SELECT id FROM search_console_data "
+                        "WHERE property_id = :pid AND date = :date "
+                        "AND COALESCE(query, :qnil) = COALESCE(:query, :qnil) "
+                        "AND COALESCE(page_url, :pnil) = COALESCE(:page, :pnil) "
+                        "AND COALESCE(device, :dnil) = COALESCE(:device, :dnil) "
+                        "AND COALESCE(country, :cnil) = COALESCE(:country, :cnil)"
                     ),
-                    {
-                        "wid": website_id,
-                        "pid": property_id,
-                        "date": row.get("date", ""),
-                        "query": row.get("query"),
-                        "page": row.get("page_url"),
-                        "clicks": int(row.get("clicks") or 0),
-                        "impressions": int(row.get("impressions") or 0),
-                        "ctr": float(row.get("ctr") or 0.0),
-                        "position": float(row.get("position") or 0.0),
-                        "device": row.get("device"),
-                        "country": row.get("country"),
-                    },
-                )
+                    {**params, "qnil": _NIL, "pnil": _NIL, "dnil": _NIL, "cnil": _NIL},
+                ).mappings().first()
+
+                if existing:
+                    self.db.execute(
+                        text(
+                            "UPDATE search_console_data SET "
+                            "clicks = :clicks, impressions = :impressions, "
+                            "ctr = :ctr, position = :position "
+                            "WHERE id = :row_id"
+                        ),
+                        {**params, "row_id": existing["id"]},
+                    )
+                else:
+                    self.db.execute(
+                        text(
+                            "INSERT INTO search_console_data "
+                            "(website_id, property_id, date, query, page_url, "
+                            "clicks, impressions, ctr, position, device, country) "
+                            "VALUES (:wid, :pid, :date, :query, :page, "
+                            ":clicks, :impressions, :ctr, :position, :device, :country)"
+                        ),
+                        params,
+                    )
                 imported += 1
             except Exception:
                 # Skip invalid rows

@@ -97,6 +97,15 @@ class ScUploadService:
         Returns:
             Import summary with counts and date range.
         """
+        # Validate website exists
+        from sqlalchemy import text as sa_text
+        website = self.db.execute(
+            sa_text("SELECT id FROM websites WHERE id = :id"), {"id": website_id}
+        ).mappings().first()
+        if not website:
+            from app.core.exceptions import NotFoundError
+            raise NotFoundError("website.not_found", f"Website {website_id} not found")
+
         # Create import record
         import_record = self.repo.create_import(website_id, filename, self._detect_type(filename), import_type)
         import_id = import_record["id"]
